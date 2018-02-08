@@ -1,14 +1,53 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      Ionic Blank
+      FastTimer
     </ion-title>
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+<ion-content padding class="home" text-center>
+  <ion-grid class="half-width">
+    <ion-row>
+      <ion-col>
+      <ion-input placeholder="Employee Id" [(ngModel)]="employeeId" text-center></ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+      <ion-datetime displayFormat="MM/DD/YYYY" [(ngModel)]="date" placeholder="Pick a date"></ion-datetime>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+      <button ion-button (click)="submitForm()" class="submit-btn">Submit</button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid *ngIf="finalTimeToday">
+    <ion-row>
+      <ion-col width-50 offset-25>
+        <strong>
+        Total time
+        </strong>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col width-50 offset-25>
+        {{finalTimeToday}}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid class="table-grid">
+  <ion-row *ngFor="let swipe of swipeList" class="">
+      <ion-col class="table-column">
+        {{swipe.swipeInOut}}
+      </ion-col>
+      <ion-col class="table-column">
+        {{swipe.swipeTime}}
+      </ion-col>
+  </ion-row>
+  </ion-grid>
 </ion-content>
