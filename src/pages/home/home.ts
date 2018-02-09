@@ -3,7 +3,7 @@ import { NavController } from 'ionic-angular';
 import {TimerProvider} from "../../providers/timer/timer";
 import * as moment from "moment";
 import * as $ from "jquery";
-import { DatePicker } from '@ionic-native/date-picker';
+import { Storage } from '@ionic/storage';
 
 @Component({
   selector: 'page-home',
@@ -16,14 +16,42 @@ export class HomePage {
    swipeList = [];
    finalTimeToday;
    date;
+   today;
+   finalWeeklyTime;
 
   constructor(public navCtrl: NavController,
               private timerProvider: TimerProvider,
-              private datePicker: DatePicker) {
+              private storage: Storage) {
     var currDate = new Date();
+    this.today = new Date();
     var month = currDate.getMonth() + 1;
-           this.date =  month + "-" + currDate.getDate() + "-" + currDate.getFullYear();
-           this.date = currDate.toISOString();
+    this.date =  month + "-" + currDate.getDate() + "-" + currDate.getFullYear();
+    this.date = currDate.toISOString();
+    this.storage.get('employeeId').then((val) => {
+      if (val != null) {
+        this.employeeId = val;
+        this.timerProvider.getTimings(this.employeeId, this.parseISOString(this.date)).subscribe(value => {
+          this.swipeList = [];
+          this.totalMinutes = this.calculateTimeLogAndSetTableData(value, this.swipeList);
+          this.formatFinalTime(this.totalMinutes);
+
+        });
+
+        this.timerProvider.getWeeklyData(this.employeeId, this.parseISOString(this.date)).subscribe(value => {
+          debugger;
+          console.log(value);
+          var responseObject = JSON.parse(value.d);
+          console.log(responseObject);
+          var weeklyResponse = responseObject.WeeklyHours;
+          console.log(Object.keys(weeklyResponse));
+          var splitedWeekTimeLogArray = weeklyResponse[Object.keys(weeklyResponse)[0]].split(";");
+          var thisWeekHoursTillYesterday = splitedWeekTimeLogArray[1];
+          var thisWeekMinutes = this.getTotalTimeLogThisWeekAtInstance(thisWeekHoursTillYesterday);
+          console.log(thisWeekMinutes);
+          this.formatWeeklyTime(thisWeekMinutes);
+        });
+      }
+    });
   }
 
   ionViewWillEnter() {
@@ -85,17 +113,93 @@ export class HomePage {
         this.finalTimeToday = Math.floor(totalMinutes / 60) + " hours " + totalMinutes % 60 + " minutes ";
   }
 
+  formatWeeklyTime(weeklyTotalMinues) {
+       this.finalWeeklyTime =  Math.floor(weeklyTotalMinues / 60) + " hours " + weeklyTotalMinues % 60 + " minutes ";
+  }
+
   submitForm() {
-    this.timerProvider.getTimings(this.employeeId, this.parseISOString(this.date)).subscribe(value => {
-      this.swipeList = [];
-      this.totalMinutes = this.calculateTimeLogAndSetTableData(value, this.swipeList);
-      this.formatFinalTime(this.totalMinutes);
-    });
+    debugger;
+    if (this.employeeId != null && this.employeeId != "") {
+      this.storage.set('employeeId', this.employeeId);
+      this.timerProvider.getTimings(this.employeeId, this.parseISOString(this.date)).subscribe(value => {
+        this.swipeList = [];
+        this.totalMinutes = this.calculateTimeLogAndSetTableData(value, this.swipeList);
+        this.formatFinalTime(this.totalMinutes);
+
+      });
+
+      this.finalWeeklyTime = null;
+      if(this.parseISOString(this.date).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)) {
+        this.timerProvider.getWeeklyData(this.employeeId, this.parseISOString(this.date)).subscribe(value => {
+          debugger;
+          var responseObject = JSON.parse(value.d);
+          console.log(responseObject);
+          var weeklyResponse = responseObject.WeeklyHours;
+          var splitedWeekTimeLogArray = weeklyResponse[Object.keys(weeklyResponse)[0]].split(";");
+          var thisWeekHoursTillYesterday = splitedWeekTimeLogArray[1];
+          var thisWeekMinutes = this.getTotalTimeLogThisWeekAtInstance(thisWeekHoursTillYesterday);
+          console.log(thisWeekMinutes);
+          this.formatWeeklyTime(thisWeekMinutes);
+        });
+      }
+    }
+  }
+
+  getTotalTimeLogThisWeekAtInstance(totalWeekTimeLog) {
+    var hourAndMinutesOftotalWeekTimeLog = totalWeekTimeLog.split(":");
+    return parseInt(hourAndMinutesOftotalWeekTimeLog[0]) * 60 + parseInt(hourAndMinutesOftotalWeekTimeLog[1]) + this.totalMinutes;
   }
 
   parseISOString(s) {
     var b = s.split(/\D+/);
     return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
+  }
+
+
+  checkIfInputDateAndCurrentDateIsSame(inputDate, inputMonth, inputYear) {
+    return inputDate === this.today.getDate()
+      && inputMonth === (this.today.getMonth() + 1)
+      && inputYear === this.increment1900(this.today.getYear());
+  }
+
+  increment1900(year) {
+    return year + 1900;
+  }
+
+  doRefresh(refresher) {
+    console.log('Begin async operation', refresher);
+    this.storage.get('employeeId').then((val) => {
+      if (val != null) {
+        this.employeeId = val;
+        this.timerProvider.getTimings(this.employeeId, this.parseISOString(this.date)).subscribe(value => {
+          this.swipeList = [];
+          this.totalMinutes = this.calculateTimeLogAndSetTableData(value, this.swipeList);
+          this.formatFinalTime(this.totalMinutes);
+
+        });
+        if (this.parseISOString(this.date).setHours(0, 0, 0, 0) == new Date().setHours(0, 0, 0, 0)) {
+          this.timerProvider.getWeeklyData(this.employeeId, this.parseISOString(this.date)).subscribe(value => {
+            debugger;
+            console.log(value);
+            var responseObject = JSON.parse(value.d);
+            console.log(responseObject);
+            var weeklyResponse = responseObject.WeeklyHours;
+            console.log(Object.keys(weeklyResponse));
+            var splitedWeekTimeLogArray = weeklyResponse[Object.keys(weeklyResponse)[0]].split(";");
+            var thisWeekHoursTillYesterday = splitedWeekTimeLogArray[1];
+            var thisWeekMinutes = this.getTotalTimeLogThisWeekAtInstance(thisWeekHoursTillYesterday);
+            console.log(thisWeekMinutes);
+            this.formatWeeklyTime(thisWeekMinutes);
+          });
+          refresher.complete();
+        }
+      }
+    });
+
+    setTimeout(() => {
+      console.log('Async operation has ended');
+      refresher.complete();
+    }, 2000);
   }
 
 

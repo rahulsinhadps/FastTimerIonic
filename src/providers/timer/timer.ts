@@ -12,11 +12,13 @@ import * as moment from 'moment'
 */
 @Injectable()
 export class TimerProvider {
-  url;
+  dailyPunchUrl;
+  weeklyUrl;
 
   constructor(public http: Http) {
     console.log('Hello TimerProvider Provider');
-    this.url = "https://itportaltimer.azurewebsites.net/attendancecalendar/pages/Attendancecalendar.aspx/getDailyPunchRecords";
+    this.dailyPunchUrl = "https://itportaltimer.azurewebsites.net/attendancecalendar/pages/Attendancecalendar.aspx/getDailyPunchRecords";
+    this.weeklyUrl = "https://itportaltimer.azurewebsites.net/attendancecalendar/pages/Attendancecalendar.aspx/getAllLeaveDays";
   }
 
   getTimings(employeeId, date) {
@@ -25,7 +27,16 @@ export class TimerProvider {
       SelectedDate :  month + "-" + date.getDate() + "-" + date.getFullYear(),
       empid : employeeId
     };
-     return this.http.post(this.url, request).map(value => value.json());
+     return this.http.post(this.dailyPunchUrl, request).map(value => value.json());
+  }
+
+  getWeeklyData(employeeId, date) {
+    var month = date.getMonth() + 1;
+    var request = {
+      Currdate :  month + "-" + date.getDate() + "-" + date.getFullYear(),
+      empid : employeeId
+    };
+    return this.http.post(this.weeklyUrl, request).map(value => value.json());
   }
 
 

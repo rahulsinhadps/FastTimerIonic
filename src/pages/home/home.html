@@ -1,21 +1,31 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      FastTimer
+      TimeKeeper
     </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding class="home" text-center>
-  <ion-grid class="half-width">
+  <ion-refresher (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-grid>
     <ion-row>
-      <ion-col>
-      <ion-input placeholder="Employee Id" [(ngModel)]="employeeId" text-center></ion-input>
+      <ion-col class="date-label input-col">
+        Employee Id
+      </ion-col>
+      <ion-col class="input-col">
+      <ion-input placeholder="Enter here" [(ngModel)]="employeeId" text-center></ion-input>
       </ion-col>
     </ion-row>
     <ion-row>
-      <ion-col>
-      <ion-datetime displayFormat="MM/DD/YYYY" [(ngModel)]="date" placeholder="Pick a date"></ion-datetime>
+      <ion-col class="date-label input-col">
+        Date
+      </ion-col>
+      <ion-col class="input-col">
+      <ion-datetime displayFormat="MMM/DD/YYYY" [(ngModel)]="date" placeholder="Pick a date"></ion-datetime>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -27,15 +37,30 @@
 
   <ion-grid *ngIf="finalTimeToday">
     <ion-row>
-      <ion-col width-50 offset-25>
+      <ion-col width-50 offset-25 class="">
         <strong>
-        Total time
+        Day
         </strong>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col width-50 offset-25>
         {{finalTimeToday}}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid *ngIf="finalWeeklyTime">
+    <ion-row>
+      <ion-col width-50 offset-25>
+        <strong>
+          This Week
+        </strong>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col width-50 offset-25>
+        {{finalWeeklyTime}}
       </ion-col>
     </ion-row>
   </ion-grid>

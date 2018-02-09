@@ -83,5 +83,7 @@
     <plugin name="cordova-plugin-ionic-keyboard" spec="^2.0.5" />
     <plugin name="cordova-plugin-console" spec="^1.1.0" />
     <plugin name="cordova-plugin-datepicker" spec="^0.9.3" />
+    <plugin name="cordova-plugin-nativestorage" spec="^2.2.2" />
+    <plugin name="cordova-sqlite-storage" spec="^2.2.0" />
     <engine name="android" spec="git+https://github.com/apache/cordova-android.git#6.2.2" />
 </widget>
